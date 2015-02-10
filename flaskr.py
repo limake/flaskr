@@ -63,7 +63,6 @@ def upload():
     elif request.method == 'POST':
         f = request.files['file']
         fname = secure_filename(f.filename)  # 获取一个安全的文件名，且仅仅支持ascii字符；
-        pathfilename = os.path.join(UPLOAD_FOLDER, fname)
         f.save(os.path.join(UPLOAD_FOLDER, fname))
         # f.save('d:\\a.sql')
 
@@ -85,16 +84,11 @@ def mywtf():
 
 @app.route('/')
 def show_entries():
-    #cur = g.db.execute('selct title,text from entries eorder by id desc')
+    cur = g.db.execute('select title,text from entries order by id desc')
+    e = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
 
-    # s
-    #     lucy = text(title='lucy', fulltitle='lucy.F', password='asdf')
-    # s.add(lucy)
-    # s.commit()
-
-    #entries = [dict(title=row[0], text=row[1]) for row in cur.fetchall()]
-    s = DBSession()
-    e = s.query(entries).all()
+    # s = DBSession()
+    # e = s.query(entries).all()
 
     return render_template('show_entries.html', entries=e)
 
@@ -103,19 +97,14 @@ def show_entries():
 def add_entry():
     if not session.get('logged_in'):
         abort(401)
-    # g.db.execute('insert into entries (title, text) values(?,?)',
-    #             [request.form['title'], request.form['text']])
-    # g.db.commit()
+    g.db.execute('insert into entries (title, text) values(?,?)',
+                 [request.form['title'], request.form['text']])
+    g.db.commit()
 
-    e = entries(title=request.form['title'], text=request.form['text'])
-    s = DBSession()
-    s.add(e)
-    s.commit()
-# s
-#     text = [text(title='maven', fulltitle='maven.sms', password='1234'),
-#             text(title='fang', fulltitle='zhang fang', password='lkjhsd')]
-# s.add_all(text)
-# s.commit()
+    # e = entries(title=request.form['title'], text=request.form['text'])
+    # s = DBSession()
+    # s.add(e)
+    # s.commit()
 
     flash('New entry was successfully posted')
     return redirect(url_for('show_entries'))
